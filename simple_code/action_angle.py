@@ -1,6 +1,7 @@
 import numpy as np
 import functions as fn
 import os
+import sys
 from tqdm.auto import tqdm
 if os.environ.get("PHASE_SPACE", "0") == "1":
     import params_fixed as par
@@ -37,12 +38,25 @@ def run_action_angle():
 
 # --------------- Save results ----------------
 
+    is_phase_space = os.environ.get("PHASE_SPACE", "0") == "1"
     output_dir = "action_angle"
+
+    print(is_phase_space)
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    file_path = os.path.join(output_dir, f"cartesian.npz")
+    if is_phase_space:
+        a_val = par.a_lambda(0)
+        omega_val = par.omega_lambda(0)
+
+        a_str = f"{a_val:.3f}"
+        omega_str = f"{omega_val:.2f}"
+        file_path = os.path.join(output_dir, f"cartesian_a{a_str}_omega{omega_str}.npz")
+
+    else:
+        file_path = os.path.join(output_dir, "cartesian.npz")      
+
     np.savez(file_path, x=x, y=y)
     
 # ---------------------------------------------

@@ -1,4 +1,4 @@
 epsilon_i: 0.0225
-epsilon_f: 0.04
+epsilon_f: 0.0425
 nu_m_i: 0.9
-nu_m_f: 0.8
+nu_m_f: 0.85

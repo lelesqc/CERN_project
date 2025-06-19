@@ -2,7 +2,7 @@
 
 TOTAL_JOBS=1
 RADIUS=10
-PARTICLES_PER_JOB=2000
+PARTICLES_PER_JOB=1000
 
 # -------------------------
 
