@@ -34,6 +34,7 @@ def dV_dq(q):
     return par.A**2 * np.sin(q)
 
 def Delta_q(p, t, dt):
+    #print(f"{t:.3f}, {par.a_lambda(t):.3f}, {par.omega_lambda(t)/par.omega_s:.3f}")
     return par.lambd**2 * p * dt + par.a_lambda(t) * par.omega_lambda(t) * np.sin(par.omega_lambda(t) * t + par.phi_0) * dt
 
 def compute_I_from_h0(h0, A):

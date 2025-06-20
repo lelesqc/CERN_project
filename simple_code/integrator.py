@@ -32,17 +32,15 @@ def run_integrator(poincare_mode="last", poincare_every=1):
 
         q += fn.Delta_q(p, t_mid, par.dt/2)
         q = np.mod(q, 2 * np.pi)
-
-        par.t += par.dt
-        
+               
         if np.cos(par.omega_lambda(par.t) * par.t) > 1.0-1e-5:
             if poincare_mode == "first":
                 if q_single == None:
                     q_single = q.copy()
                     p_single = p.copy()
-            elif poincare_mode == "last":
-                q_single = q.copy()
-                p_single = p.copy()
+            #elif poincare_mode == "last":
+            #    q_single = q.copy()
+            #    p_single = p.copy()
             elif poincare_mode == "all":
                 q_sec.append(q.copy())
                 p_sec.append(p.copy())
@@ -52,9 +50,19 @@ def run_integrator(poincare_mode="last", poincare_every=1):
                 
             count += 1
 
+        par.t += par.dt
+
+        if par.t == par.T_tot:
+            print(f"{par.a_lambda(par.t):.3f}, {par.omega_lambda(par.t)/par.omega_s:.3f}")
+
+
     if poincare_mode == "last":
+        orig_a_lambda = par.a_lambda
+        orig_omega_lambda = par.omega_lambda
         a_const = par.a_lambda(par.T_tot)
         omega_const = par.omega_lambda(par.T_tot)
+        par.a_lambda = lambda t: a_const
+        par.omega_lambda = lambda t: omega_const
 
         found = False
         while not found:
@@ -64,16 +72,26 @@ def run_integrator(poincare_mode="last", poincare_every=1):
             p += par.dt * fn.dV_dq(q)
             q += fn.Delta_q(p, t_mid, par.dt/2)
             q = np.mod(q, 2 * np.pi)
-            par.t += par.dt
 
             if np.cos(par.omega_lambda(par.t) * par.t) > 1.0-1e-5:
                 q_single = q.copy()
                 p_single = p.copy()
                 found = True
 
+                print(f"par.omega_lambda(par.t) = {par.omega_lambda(par.t)/par.omega_s:.3f}, par.a_lambda(par.t) = {par.a_lambda(par.t):.3f}")
+
+            par.t += par.dt
+
+        par.a_lambda = orig_a_lambda
+        par.omega_lambda = orig_omega_lambda
+
     elif os.environ.get("PHASE_SPACE", "0") == "1":
+        orig_a_lambda = par.a_lambda
+        orig_omega_lambda = par.omega_lambda
         a_const = par.a_lambda(0)
-        omega_const = par.omega_lambda(0)
+        omega_const = par.omega_m
+        par.a_lambda = lambda t: a_const
+        par.omega_lambda = lambda t: omega_const
 
         found = False
         while not found:
@@ -83,12 +101,18 @@ def run_integrator(poincare_mode="last", poincare_every=1):
             p += par.dt * fn.dV_dq(q)
             q += fn.Delta_q(p, t_mid, par.dt/2)
             q = np.mod(q, 2 * np.pi)
-            par.t += par.dt
 
             if np.cos(par.omega_lambda(par.t) * par.t) > 1.0-1e-5:
                 q_sec.append(q.copy())
                 p_sec.append(p.copy())
                 found = True
+
+                print(f"par.omega_lambda(par.t) = {par.omega_lambda(par.t)/par.omega_s:.3f}, par.a_lambda(par.t) = {par.a_lambda(par.t):.3f}")
+
+            par.t += par.dt
+
+        par.a_lambda = orig_a_lambda
+        par.omega_lambda = orig_omega_lambda
     
     if poincare_mode in ["first", "last"]:
             q = q_single

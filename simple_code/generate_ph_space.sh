@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RADIUS=0.07
+RADIUS=0.05
 PARTICLES_PER_JOB=25
 
 # -------------------------

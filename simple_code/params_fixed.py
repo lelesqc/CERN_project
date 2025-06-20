@@ -17,7 +17,7 @@ damp_rate = 38.1
 beta = 1.0
 D = 1.82e-3
 N = 100    # fixed
-N_turn = 5000
+N_turn = 10000
 phi_0 = 0.0
 e = 1
 lambd = np.sqrt(h * eta * omega_rev)
@@ -30,7 +30,7 @@ config_path = "params_fixed.yaml"
 with open(config_path) as f:
     config = yaml.safe_load(f)
 
-epsilon = config["epsilon"]
+epsilon_val = config["epsilon"]
 nu_m = config["nu_m"]
 omega_m = nu_m * omega_s
 
@@ -47,6 +47,5 @@ t = 0.0
 # ------------- lambda functions -----------
 
 omega_lambda = lambda t: omega_m
-epsilon_val = epsilon
 epsilon = lambda t: epsilon_val
-a_lambda = lambda t: epsilon_val / omega_m
+a_lambda = lambda t: epsilon_val / (omega_m/omega_s)

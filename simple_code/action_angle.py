@@ -46,7 +46,7 @@ def run_action_angle():
 
     if is_phase_space:
         a_val = par.a_lambda(0)
-        omega_val = par.omega_lambda(0)
+        omega_val = par.omega_m
 
         a_str = f"{a_val:.3f}"
         omega_str = f"{omega_val:.2f}"
