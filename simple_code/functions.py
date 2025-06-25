@@ -34,8 +34,11 @@ def dV_dq(q):
     return par.A**2 * np.sin(q)
 
 def Delta_q(p, t, dt):
-    #print(f"{t:.3f}, {par.a_lambda(t):.3f}, {par.omega_lambda(t)/par.omega_s:.3f}")
+    #print(f"{t:.3f}, {par.a_lambda(t):.5f}, {par.omega_lambda(t)/par.omega_s:.5f}")
     return par.lambd**2 * p * dt + par.a_lambda(t) * par.omega_lambda(t) * np.sin(par.omega_lambda(t) * t + par.phi_0) * dt
+
+def t_from_phi(phi):
+    return phi / par.omega_lambda(phi)
 
 def compute_I_from_h0(h0, A):
     kappa_squared = 0.5 * (1 + h0 / (A**2))
@@ -60,6 +63,16 @@ def compute_phi_delta(Q, P):
     delta = P / par.lambd
     phi = par.lambd * Q - np.pi
     return phi, delta
+
+def integrator_step(q, p, t, dt, Delta_q, dV_dq):
+    q += Delta_q(p, t, dt/2)
+    q = np.mod(q, 2 * np.pi)        
+    t_mid = t + dt/2
+    p += dt * dV_dq(q)
+    q += Delta_q(p, t_mid, dt/2)
+    q = np.mod(q, 2 * np.pi)
+
+    return q, p
 
 def find_h0_numerical(I_target):
     def G_objective(h0_val):

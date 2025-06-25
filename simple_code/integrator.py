@@ -8,6 +8,8 @@ if os.environ.get("PHASE_SPACE", "0") == "1":
 else:
     import params as par
 
+is_phase_space = os.environ.get("PHASE_SPACE", "0") == "1"
+
 def run_integrator(poincare_mode="last", poincare_every=1):
     data = np.load("init_conditions/initial.npz")
 
@@ -17,103 +19,84 @@ def run_integrator(poincare_mode="last", poincare_every=1):
     q = q_init.copy()
     p = p_init.copy()
 
+    step = 0
     count = 0
+
     q_sec, p_sec = [], []
     q_single = None
     p_single = None
+    q_full, p_full = [], []
 
-    for _ in tqdm(range(par.n_steps)):
-        q += fn.Delta_q(p, par.t, par.dt/2)
-        q = np.mod(q, 2 * np.pi)
-        
-        t_mid = par.t + par.dt/2
+    found_last_poincare = False
 
-        p += par.dt * fn.dV_dq(q)
-
-        q += fn.Delta_q(p, t_mid, par.dt/2)
-        q = np.mod(q, 2 * np.pi)
-               
-        if np.cos(par.omega_lambda(par.t) * par.t) > 1.0-1e-5:
-            if poincare_mode == "first":
-                if q_single == None:
-                    q_single = q.copy()
-                    p_single = p.copy()
-            #elif poincare_mode == "last":
-            #    q_single = q.copy()
-            #    p_single = p.copy()
-            elif poincare_mode == "all":
+    while not found_last_poincare:
+        if poincare_mode in ["last", "all", "none"] and step >= par.n_steps:
+            if np.cos(par.omega_lambda(par.t) * par.t) > 1.0 - 1e-6:
+                #print("entrato", par.t, step, par.a_lambda(par.t), par.omega_lambda(par.t) / par.omega_s, np.cos(par.omega_lambda(par.t) * par.t))
                 q_sec.append(q.copy())
                 p_sec.append(p.copy())
-            elif poincare_mode == "number" and (count % poincare_every == 0):
-                q_sec.append(q.copy())
-                p_sec.append(p.copy())
-                
-            count += 1
-
-        par.t += par.dt
-
-        if par.t == par.T_tot:
-            print(f"{par.a_lambda(par.t):.3f}, {par.omega_lambda(par.t)/par.omega_s:.3f}")
-
-
-    if poincare_mode == "last":
-        orig_a_lambda = par.a_lambda
-        orig_omega_lambda = par.omega_lambda
-        a_const = par.a_lambda(par.T_tot)
-        omega_const = par.omega_lambda(par.T_tot)
-        par.a_lambda = lambda t: a_const
-        par.omega_lambda = lambda t: omega_const
-
-        found = False
-        while not found:
-            q += fn.Delta_q(p, par.t, par.dt/2)
-            q = np.mod(q, 2 * np.pi)
-            t_mid = par.t + par.dt/2
-            p += par.dt * fn.dV_dq(q)
-            q += fn.Delta_q(p, t_mid, par.dt/2)
-            q = np.mod(q, 2 * np.pi)
-
-            if np.cos(par.omega_lambda(par.t) * par.t) > 1.0-1e-5:
                 q_single = q.copy()
                 p_single = p.copy()
-                found = True
+                q_full.append(q.copy())
+                p_full.append(p.copy())
+                found_last_poincare = True
 
-                print(f"par.omega_lambda(par.t) = {par.omega_lambda(par.t)/par.omega_s:.3f}, par.a_lambda(par.t) = {par.a_lambda(par.t):.3f}")
+                par.a_lambda = orig_a_lambda
+                par.omega_lambda = orig_omega_lambda 
+        if is_phase_space:
+            if poincare_mode == "all":
+                if np.cos(par.omega_lambda(par.t) * par.t) > 1.0 - 1e-6:
+                    q_sec.append(q.copy())
+                    p_sec.append(p.copy())
+            elif poincare_mode == "none":
+                q_full.append(q.copy())
+                p_full.append(p.copy())
+            orig_a_lambda = par.a_lambda
+            orig_omega_lambda = par.omega_lambda
+            a_const = par.a_lambda(par.T_tot)
+            omega_const = par.omega_lambda(par.T_tot)
+            par.a_lambda = lambda t: a_const
+            par.omega_lambda = lambda t: omega_const
 
-            par.t += par.dt
+            q, p = fn.integrator_step(q, p, par.t, par.dt, fn.Delta_q, fn.dV_dq)
 
-        par.a_lambda = orig_a_lambda
-        par.omega_lambda = orig_omega_lambda
+        else: 
+            if step == par.n_steps:
+                orig_a_lambda = par.a_lambda
+                orig_omega_lambda = par.omega_lambda
+                a_const = par.a_lambda(par.T_tot)
+                omega_const = par.omega_lambda(par.T_tot)
+                par.a_lambda = lambda t: a_const
+                par.omega_lambda = lambda t: omega_const
 
-    elif os.environ.get("PHASE_SPACE", "0") == "1":
-        orig_a_lambda = par.a_lambda
-        orig_omega_lambda = par.omega_lambda
-        a_const = par.a_lambda(0)
-        omega_const = par.omega_m
-        par.a_lambda = lambda t: a_const
-        par.omega_lambda = lambda t: omega_const
+            q, p = fn.integrator_step(q, p, par.t, par.dt, fn.Delta_q, fn.dV_dq)
 
-        found = False
-        while not found:
-            q += fn.Delta_q(p, par.t, par.dt/2)
-            q = np.mod(q, 2 * np.pi)
-            t_mid = par.t + par.dt/2
-            p += par.dt * fn.dV_dq(q)
-            q += fn.Delta_q(p, t_mid, par.dt/2)
-            q = np.mod(q, 2 * np.pi)
+            if poincare_mode == "none" and step < par.n_steps:
+                q_full.append(q.copy())
+                p_full.append(p.copy())            
 
-            if np.cos(par.omega_lambda(par.t) * par.t) > 1.0-1e-5:
-                q_sec.append(q.copy())
-                p_sec.append(p.copy())
-                found = True
+            if np.cos(par.omega_lambda(par.t) * par.t) > 1.0 - 1e-6:
+                if poincare_mode == "first":
+                    if q_single is None:
+                        q_single = q.copy()
+                        p_single = p.copy()
+                elif poincare_mode == "all":
+                    q_sec.append(q.copy())
+                    p_sec.append(p.copy())
+                elif poincare_mode == "number" and (count % poincare_every == 0):
+                    q_sec.append(q.copy())
+                    p_sec.append(p.copy())                             
 
-                print(f"par.omega_lambda(par.t) = {par.omega_lambda(par.t)/par.omega_s:.3f}, par.a_lambda(par.t) = {par.a_lambda(par.t):.3f}")
+        if step == par.n_steps // 4:
+            print(r">>> 25% completed")
+        elif step == par.n_steps // 2:
+            print(r">>> 50% completed")
+        elif step == 3 * par.n_steps // 4:
+            print(r">>> 75% completed") 
 
-            par.t += par.dt
+        par.t += par.dt
+        step += 1
 
-        par.a_lambda = orig_a_lambda
-        par.omega_lambda = orig_omega_lambda
-    
     if poincare_mode in ["first", "last"]:
             q = q_single
             p = p_single
@@ -122,6 +105,10 @@ def run_integrator(poincare_mode="last", poincare_every=1):
         if q_sec and p_sec:
             q = np.concatenate(q_sec)
             p = np.concatenate(p_sec)
+
+    elif poincare_mode == "none":
+        q = np.concatenate(q_full)
+        p = np.concatenate(p_full)
         
     q = np.array(q)
     p = np.array(p)
@@ -133,7 +120,7 @@ def run_integrator(poincare_mode="last", poincare_every=1):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    file_path = os.path.join(output_dir, "evolved_qp.npz")
+    file_path = os.path.join(output_dir, f"evolved_qp_{poincare_mode}.npz")
     np.savez(file_path, q=q, p=p)
 
 # ----------------------------------------------

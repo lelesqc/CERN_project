@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import os
 if os.environ.get("PHASE_SPACE", "0") == "1":
     import params_fixed as par
