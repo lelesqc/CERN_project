@@ -13,7 +13,7 @@ def run_action_angle(mode):
     q = data['q']
     p = data['p']
 
-    action_list = []
+    actions_list = []
     theta_list = []
     sign_list = []
 
@@ -26,15 +26,15 @@ def run_action_angle(mode):
             P = par.lambd * p[i]
 
             action, theta = fn.compute_action_angle(kappa_squared, P)
-            action_list.append(action)
+            actions_list.append(action)
             theta_list.append(theta)
-            sign_list.append(np.sign(q[i]-np.pi))
+            sign_list.append(np.sign(q[i]-np.pi))           
 
-    action_list = np.array(action_list)
+    actions_list = np.array(actions_list)
     theta_list = np.array(theta_list)
 
-    x = np.sqrt(2 * np.array(action_list)) * np.cos(theta_list)
-    y = - np.sqrt(2 * np.array(action_list)) * np.sin(theta_list) * np.array(sign_list)
+    x = np.sqrt(2 * np.array(actions_list)) * np.cos(theta_list)
+    y = - np.sqrt(2 * np.array(actions_list)) * np.sin(theta_list) * np.array(sign_list)
 
     return x, y
 
@@ -50,5 +50,5 @@ if __name__ == "__main__":
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    file_path = os.path.join(output_dir, f"a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+    file_path = os.path.join(output_dir, f"{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
     np.savez(file_path, x=x, y=y)

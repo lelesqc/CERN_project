@@ -6,7 +6,7 @@ import params as par
 import functions as fn
 
 def run_integrator(mode):
-    data = np.load("init_conditions/grid.npz")
+    data = np.load("init_conditions/qp.npz")
 
     q_init = data['q']
     p_init = data['p']
@@ -38,8 +38,11 @@ def run_integrator(mode):
         par.t += par.dt
 
     if mode == "tune":
-        q = np.array(q_traj)
-        p = np.array(p_traj)
+        q = np.concatenate(q_traj)
+        p = np.concatenate(p_traj)
+
+        q = np.array(q)
+        p = np.array(p)
     elif mode == "phasespace":
         q = np.concatenate(q_sec)
         p = np.concatenate(p_sec)

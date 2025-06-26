@@ -29,15 +29,6 @@ def Delta_q(p, psi, t, dt):
     #print(f"{t:.3f}, {np.cos(psi)}, {par.a_lambda(t):.5f}, {par.omega_lambda(t)/par.omega_s:.5f}")
     return par.lambd**2 * p * dt + par.a_lambda(t) * par.omega_lambda(t) * np.cos(psi) * dt
 
-def compute_I_from_h0(h0, A):
-    kappa_squared = 0.5 * (1 + h0 / (A**2))
-    if kappa_squared < 0 or kappa_squared > 1:
-        return np.inf
-    K = ellipk(kappa_squared)
-    E = ellipe(kappa_squared)
-    I = (8 * A / np.pi) * (E - (1 - kappa_squared) * K)
-    return I
-
 def compute_action_angle_inverse(X, Y):
     action = (X**2 + Y**2) / (2)
     theta = np.arctan2(-Y, X)

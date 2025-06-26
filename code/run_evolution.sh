@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RADIUS=10
-PARTICLES=1000
+PARTICLES=5000
 SEC_TO_PLOT=5
 
 # Poincaré mode options: "last", "all"

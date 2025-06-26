@@ -5,15 +5,43 @@ import matplotlib.pyplot as plt
 import params as par
 
 def plot(mode):
-    phase_space = np.load(f"action_angle/a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+    if mode == "phasespace":
+        data = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
 
-    x = phase_space['x']
-    y = phase_space['y']
+        x = data['x']
+        y = data['y']
 
-    plt.scatter(x, y)
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.tight_layout()
+        plt.scatter(x, y)
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.tight_layout()
+
+    if mode == "tune":
+        data = np.load("tune_analysis/fft_results.npz")
+        action_angle = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+
+        tunes_list = data['tunes_list']
+        spectra = data['spectra']
+        freqs_list = data['freqs_list']
+
+        mask = tunes_list > 0
+        tunes_pos = tunes_list[mask]
+
+        idx_sorted = np.argsort(tunes_pos)[::-1]
+        tunes_sorted = tunes_pos[idx_sorted]
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(np.arange(len(tunes_sorted)), tunes_sorted, 'o-')
+        plt.xlabel("Indice (tune decrescente)")
+        plt.ylabel("Tune")
+
+        # Scrivi il valore del tune su ogni punto
+        for i, t in enumerate(tunes_sorted):
+            plt.text(i, t, f"{t:.3f}", ha='center', va='bottom', fontsize=8, rotation=45)
+
+        plt.tight_layout()
+
+
     plt.show()
 
 
