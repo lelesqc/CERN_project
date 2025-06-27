@@ -17,6 +17,11 @@ def run_integrator(poincare_mode):
     q_single = None
     p_single = None
 
+    q_traj = []
+    p_traj = []
+    q_traj.append(q.copy())
+    p_traj.append(p.copy())
+
     q_sec = []
     p_sec = []
 
@@ -24,40 +29,65 @@ def run_integrator(poincare_mode):
     psi = par.phi_0
     find_poincare = False
     fixed_params = False
-    while not find_poincare:
-        q, p = fn.integrator_step(q, p, psi, par.t, par.dt, fn.Delta_q, fn.dV_dq)
+    done = False
 
-        if par.t >= par.T_tot:
-            fixed_params = True
+    n_extra = 4096
+    if poincare_mode == "none":
+        while done == False:
+            q, p = fn.integrator_step(q, p, psi, par.t, par.dt, fn.Delta_q, fn.dV_dq)
+            q_traj.append(q.copy())
+            p_traj.append(p.copy())
 
-        if np.cos(psi) > 1.0 - 1e-3:
-            if poincare_mode == "first":
-                if q_single == None:
+            psi += par.omega_lambda(par.t) * par.dt
+            par.t += par.dt
+
+            if par.t >= par.T_tot:
+                    fixed_params = True
+
+            if fixed_params == True:
+                for _ in range(n_extra):
+                    q, p = fn.integrator_step(q, p, psi, par.t, par.dt, fn.Delta_q, fn.dV_dq)
+                    psi += par.omega_lambda(par.T_tot) * par.dt
+                    par.t += par.dt
+
+                    if _ == n_extra - 1:
+                        done = True
+
+    else:
+        while not find_poincare:
+            q, p = fn.integrator_step(q, p, psi, par.t, par.dt, fn.Delta_q, fn.dV_dq)
+
+            if par.t >= par.T_tot:
+                fixed_params = True
+
+            if np.cos(psi) > 1.0 - 1e-3:
+                if poincare_mode == "first":
+                    if q_single == None:
+                        q_single = q.copy()
+                        p_single = p.copy()
+                        find_poincare = True                
+                elif poincare_mode == "all":
+                    q_sec.append(q.copy())
+                    p_sec.append(p.copy())
+                    if fixed_params:
+                        find_poincare = True
+                elif poincare_mode == "last" and fixed_params:
                     q_single = q.copy()
                     p_single = p.copy()
-                    find_poincare = True                
-            elif poincare_mode == "all":
-                q_sec.append(q.copy())
-                p_sec.append(p.copy())
-                if fixed_params:
                     find_poincare = True
-            elif poincare_mode == "last" and fixed_params:
-                q_single = q.copy()
-                p_single = p.copy()
-                find_poincare = True
 
-        psi += par.omega_lambda(par.t) * par.dt
-        par.t += par.dt
-        step += 1
+            psi += par.omega_lambda(par.t) * par.dt
+            par.t += par.dt
+            step += 1
 
-        if step == step // 4:
-            print(r">>> 25% completed")
-        elif step == step // 2:
-            print(r">>> 50% completed")
-        elif step == 3 * step // 4:
-            print(r">>> 75% completed")
+            if step == par.n_steps // 4:
+                print(r">>> 25% completed")
+            elif step == par.n_steps // 2:
+                print(r">>> 50% completed")
+            elif step == 3 * par.n_steps // 4:
+                print(r">>> 75% completed")
 
-    if not poincare_mode == "all":
+    if not poincare_mode in ["all", "none"]:
         q = q_single
         p = p_single
     else:

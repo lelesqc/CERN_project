@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import params as par
 
 def plot_both():
-    phase_file = f"action_angle/a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz"
+    phase_file = f"action_angle/phasespace_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz"
     evol_file = f"../code/action_angle/last_a0.025-0.050_nu0.90-0.80.npz"
 
     data_phase = np.load(phase_file)

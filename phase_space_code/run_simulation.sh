@@ -1,7 +1,7 @@
 #!/bin/bash
 
-GRID_LIM=0.05
-PARTICLES=50
+GRID_LIM=12.9
+PARTICLES=80
 
 MODE="tune"  # Options: "tune", "phasespace"
 

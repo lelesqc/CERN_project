@@ -49,9 +49,6 @@ def generate_init(radius, n_particles):
     q_init = np.array(phi)
     p_init = np.array(delta)
 
-
-    print(len(kappa_squared_list))
-
     return q_init, p_init
 
 

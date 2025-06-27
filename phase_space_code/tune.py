@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from scipy.fft import fft, fftfreq
-
+from scipy.signal.windows import hann
 import params as par
 
 def tune_calculation():
@@ -10,37 +10,71 @@ def tune_calculation():
     x = data['x']
     y = data['y']
 
-    n_particles = int(len(x) / par.n_steps) 
+    n_steps, n_particles = x.shape
 
     spectra = []
     freqs_list = []
-    tunes_list = []
+    raw_tunes = []
+    interp_tunes = []    
 
     for i in range(n_particles):
-        x_i = x[i * par.n_steps : (i + 1) * par.n_steps]
-        y_i = y[i * par.n_steps : (i + 1) * par.n_steps]
+        x_i = x[:, i]
+        y_i = y[:, i]
 
         z_i = x_i - 1j * y_i
-        chi = 2 * (np.sin(np.pi * n_particles)/par.n_steps)**2
+        window = hann(n_steps)
+        z_i_windowed = z_i * window
 
-        spectrum_i = fft(z_i * chi)
-        fft_omega_i = fftfreq(par.n_steps, par.dt)
-        fft_freqs_i = fft_omega_i / par.omega_s
+        spectrum_i = fft(z_i_windowed)
+        fft_omega_i = fftfreq(len(z_i), par.dt)
+        fft_freqs_i = fft_omega_i / par.omega_s * 2 * np.pi
 
-        abs_spec = np.abs(spectrum_i)
-        freqs_pos = fft_freqs_i
-        idx_max = np.argmax(abs_spec)
-        tune_i = freqs_pos[idx_max]
+        amplitude_i = np.abs(spectrum_i)
+        positive_freq_mask = fft_freqs_i > 0
+        positive_freqs_i = fft_freqs_i[positive_freq_mask]
+        positive_ampls = amplitude_i[positive_freq_mask]
+
+        idx_max = np.argmax(positive_ampls)
+        tune_i = positive_freqs_i[idx_max]
+        
+        # interpolation
+        if idx_max > 0 and idx_max < len(positive_ampls)-1:
+            cf1 = positive_ampls[idx_max-1]
+            cf2 = positive_ampls[idx_max]
+            cf3 = positive_ampls[idx_max+1]
+            
+            if cf3 > cf1:
+                p1, p2 = cf2, cf3
+                nn = idx_max
+            else:
+                p1, p2 = cf1, cf2
+                nn = idx_max - 1
+            
+            co = np.cos(2*np.pi/n_steps)
+            si = np.sin(2*np.pi/n_steps)
+            
+            scra1 = co**2 * (p1+p2)**2 - 2*p1*p2*(2*co**2 - co - 1)
+            scra2 = (p1 + p2*co)*(p1 - p2)
+            scra3 = p1**2 + p2**2 + 2*p1*p2*co
+            scra4 = (-scra2 + p2*np.sqrt(scra1)) / scra3
+            
+            assk = nn + (n_steps/(2*np.pi)) * np.arcsin(si*scra4)
+            delta_f = positive_freqs_i[1] - positive_freqs_i[0]
+            freq_interp = positive_freqs_i[0] + assk * delta_f
+            interp_tunes.append(freq_interp)
+        else:
+            interp_tunes.append(tune_i)
 
         spectra.append(spectrum_i)
         freqs_list.append(fft_freqs_i)
-        tunes_list.append(tune_i)
+        raw_tunes.append(tune_i)
 
     spectra = np.array(spectra)
     freqs_list = np.array(freqs_list)
-    tunes_list = np.array(tunes_list)          
+    raw_tunes = np.array(raw_tunes)  
+    interpolated_tunes = np.array(interp_tunes)
 
-    return spectra, freqs_list, tunes_list
+    return spectra, freqs_list, interpolated_tunes
 
 
 # -------------------------------------
