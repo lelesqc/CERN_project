@@ -42,11 +42,8 @@ def run_integrator(mode):
         p = np.array(p_traj)
 
     elif mode == "phasespace":
-        q = np.concatenate(q_sec)
-        p = np.concatenate(p_sec)
-
-        q = np.array(q)
-        p = np.array(p)
+        q = np.array(q_sec)
+        p = np.array(p_sec)
 
     return q, p
 

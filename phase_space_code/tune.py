@@ -10,6 +10,8 @@ def tune_calculation():
     x = data['x']
     y = data['y']
 
+    print(x.shape)
+
     n_steps, n_particles = x.shape
 
     spectra = []

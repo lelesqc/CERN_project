@@ -14,6 +14,7 @@ def plot(mode):
         plt.scatter(x, y)
         plt.xlabel("X")
         plt.ylabel("Y")
+        plt.axis('equal')
         plt.tight_layout()
         plt.show()
 
@@ -26,16 +27,22 @@ def plot(mode):
 
         x_init = x[0, :]            
         actions_init = actions[0, :] 
+        
+        mask = x_init > 0
 
         spectra = data['spectra']
         freqs_list = data['freqs_list']
         tunes_list = data['tunes_list']
 
-        for i in range(len(x_init)):
-            print(f"action iniziale: {actions_init[i]}, tune: {tunes_list[i]}")
+        actions_init_pos = actions_init[mask]
+        tunes_list_pos = tunes_list[mask]
+
+        for i in range(len(actions_init_pos)):
+            print(f"action: {actions_init_pos[i]}, tune: {tunes_list_pos[i]}")
         print(np.max(tunes_list))
 
         plt.scatter(actions_init, tunes_list)
+        plt.tight_layout()
         plt.show()
 
 

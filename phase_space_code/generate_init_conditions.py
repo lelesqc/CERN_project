@@ -7,7 +7,7 @@ import params as par
 import functions as fn
 
 def generate_grid(grid_lim, n_particles):
-    X = np.linspace(-grid_lim, grid_lim, n_particles)
+    X = np.linspace(-0.01, grid_lim, n_particles)
     Y = 0
 
     action, theta = fn.compute_action_angle_inverse(X, Y)

@@ -16,8 +16,9 @@ def run_action_angle(mode):
     n_steps, n_particles = q.shape
 
     actions_list = np.zeros((n_steps, n_particles))
-    theta_list = np.zeros((n_steps, n_particles))
-    sign_list = np.zeros((n_steps, n_particles))
+
+    x = np.zeros((n_steps, n_particles))
+    y = np.zeros((n_steps, n_particles))
     
     for j in tqdm(range(n_particles)):
         for i in range(n_steps):
@@ -29,15 +30,14 @@ def run_action_angle(mode):
                 P = par.lambd * p[i, j]
 
                 action, theta = fn.compute_action_angle(kappa_squared, P)
-                actions_list[i, j] = action
-                theta_list[i, j] = theta
-                sign_list = np.sign(q[i, j]-np.pi)  
+                actions_list[i, j] = action 
 
+                x[i, j] = np.sqrt(2 * action) * np.cos(theta)
+                y[i, j] = - np.sqrt(2 * action) * np.sin(theta) * np.sign(q[i, j]-np.pi)
+
+    x = np.array(x)
+    y = np.array(y)
     actions_list = np.array(actions_list)
-    theta_list = np.array(theta_list)
-
-    x = np.sqrt(2 * np.array(actions_list)) * np.cos(theta_list)
-    y = - np.sqrt(2 * np.array(actions_list)) * np.sin(theta_list) * np.array(sign_list)
 
     return x, y, actions_list
 
