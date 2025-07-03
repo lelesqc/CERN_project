@@ -20,5 +20,27 @@ def plot_both():
     plt.tight_layout()
     plt.show()
 
+def plot_both_with_tune():
+    data_fft = np.load("tune_analysis/fft_results.npz")
+    phase_file = np.load(f"action_angle/phasespace_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+    evolved_for_fft = np.load(f"action_angle/tune_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+
+    tunes = data_fft['tunes_list']
+
+    x_last = evolved_for_fft['x'][-1, :]
+    y_last = evolved_for_fft['y'][-1, :]
+
+    plt.figure(figsize=(7,7))
+    plt.scatter(phase_file['x'], phase_file['y'], s=10, label="Phase space", alpha=1.0, color='orange')
+    sc = plt.scatter(x_last, y_last, c=tunes, cmap='viridis', s=30, label="Evolution (last, tune colored)", alpha=1.0)
+    #plt.scatter(x_last, y_last, s=30, label="Evolution", alpha=1.0, color='blue')
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.legend()
+    plt.axis('equal')
+    plt.colorbar(sc, label="Tune")
+    plt.tight_layout()
+    plt.show()
+
 if __name__ == "__main__":
-    plot_both()
+    plot_both_with_tune()

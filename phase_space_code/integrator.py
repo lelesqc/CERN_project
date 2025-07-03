@@ -11,14 +11,18 @@ def run_integrator(mode):
     q_init = data['q']
     p_init = data['p']
 
-    q = q_init.copy()
-    p = p_init.copy()
+    q = np.copy(q_init)
+    p = np.copy(p_init)
 
-    q_traj = []
-    p_traj = []
-
-    q_sec = []
-    p_sec = []
+    if mode == "tune":
+        q_traj = np.zeros((par.n_steps, len(q)))
+        p_traj = np.zeros((par.n_steps, len(p)))
+        step_count = 0
+        
+    elif mode == "phasespace":
+        q_sec = np.zeros((par.n_steps, len(q)))
+        p_sec = np.zeros((par.n_steps, len(p)))
+        sec_count = 0
 
     psi = par.phi_0
 
@@ -26,24 +30,26 @@ def run_integrator(mode):
         q, p = fn.integrator_step(q, p, psi, par.t, par.dt, fn.Delta_q, fn.dV_dq)
 
         if mode == "tune":
-            q_traj.append(q.copy())
-            p_traj.append(p.copy())
+            q_traj[step_count] = q
+            p_traj[step_count] = p
+            step_count += 1
 
         elif mode == "phasespace":
             if np.cos(psi) > 1.0 - 1e-3:              
-                q_sec.append(q.copy())
-                p_sec.append(p.copy())
+                q_sec[sec_count] = q
+                p_sec[sec_count] = p
+                sec_count += 1
                 
         psi += par.omega_m * par.dt
         par.t += par.dt
 
     if mode == "tune":
-        q = np.array(q_traj)
-        p = np.array(p_traj)
+        q = q_traj
+        p = p_traj
 
     elif mode == "phasespace":
-        q = np.array(q_sec)
-        p = np.array(p_sec)
+        q = q_sec[:sec_count]
+        p = p_sec[:sec_count]
 
     return q, p
 

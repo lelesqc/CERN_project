@@ -11,10 +11,14 @@ def plot(mode):
         x = data['x']
         y = data['y']
 
-        plt.scatter(x, y)
-        plt.xlabel("X")
-        plt.ylabel("Y")
-        plt.axis('equal')
+        plt.figure(figsize=(7,7))
+        plt.scatter(x, y, s=3, label=r"Phase Space for final distr.", alpha=1.0)
+        plt.xlabel("X", fontsize=20)
+        plt.ylabel("Y", fontsize=20)
+        plt.xlim(-15, 15)
+        plt.ylim(-15, 15)
+        plt.legend(fontsize=18)
+        plt.tick_params(labelsize=18)
         plt.tight_layout()
         plt.show()
 
@@ -39,9 +43,12 @@ def plot(mode):
 
         for i in range(len(actions_init_pos)):
             print(f"action: {actions_init_pos[i]}, tune: {tunes_list_pos[i]}")
-        print(np.max(tunes_list))
 
-        plt.scatter(actions_init, tunes_list)
+        plt.scatter(x_init[1:], tunes_list[1:])
+        plt.xlabel("X", fontsize=20)
+        plt.ylabel("Tune", fontsize=20)
+        plt.title("Tune vs X", fontsize=22)
+        plt.grid(True)    
         plt.tight_layout()
         plt.show()
 

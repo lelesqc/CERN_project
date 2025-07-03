@@ -6,25 +6,24 @@ import params as par
 
 def tune_calculation():
     data = np.load(f"action_angle/tune_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
-
+    
     x = data['x']
     y = data['y']
 
-    print(x.shape)
-
     n_steps, n_particles = x.shape
 
-    spectra = []
-    freqs_list = []
-    raw_tunes = []
-    interp_tunes = []    
+    spectra = np.zeros((n_particles, n_steps), dtype=np.complex128)
+    freqs_list = np.zeros((n_particles, n_steps), dtype=np.float64)
+    raw_tunes = np.zeros(n_particles, dtype=np.float64)
+    interp_tunes = np.zeros(n_particles, dtype=np.float64)
+
+    window = hann(n_steps)
 
     for i in range(n_particles):
-        x_i = x[:, i]
-        y_i = y[:, i]
+        x_i = x[:, i] * par.lambd
+        y_i = y[:, i] / par.lambd
 
         z_i = x_i - 1j * y_i
-        window = hann(n_steps)
         z_i_windowed = z_i * window
 
         spectrum_i = fft(z_i_windowed)
@@ -63,24 +62,14 @@ def tune_calculation():
             assk = nn + (n_steps/(2*np.pi)) * np.arcsin(si*scra4)
             delta_f = positive_freqs_i[1] - positive_freqs_i[0]
             freq_interp = positive_freqs_i[0] + assk * delta_f
-            interp_tunes.append(freq_interp)
-        else:
-            interp_tunes.append(tune_i)
+            interp_tunes[i] = freq_interp
 
-        spectra.append(spectrum_i)
-        freqs_list.append(fft_freqs_i)
-        raw_tunes.append(tune_i)
+        spectra[i, :] = spectrum_i
+        freqs_list[i, :] = fft_freqs_i
 
-    spectra = np.array(spectra)
-    freqs_list = np.array(freqs_list)
-    raw_tunes = np.array(raw_tunes)  
-    interpolated_tunes = np.array(interp_tunes)
-
-    return spectra, freqs_list, interpolated_tunes
-
+    return spectra, freqs_list, interp_tunes
 
 # -------------------------------------
-
 
 if __name__ == "__main__":
     spectra, freqs_list, tunes_list = tune_calculation()

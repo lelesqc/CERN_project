@@ -6,37 +6,65 @@ from tqdm.auto import tqdm
 import params as par
 import functions as fn
 
-
 def run_action_angle(poincare_mode):
     data = np.load(f"integrator/evolved_qp_{poincare_mode}.npz")
+    #data = np.load("init_conditions/init_distribution.npz")
 
     q = data['q']
     p = data['p']
 
-    action_list = []
-    theta_list = []
-    sign_list = []
+    if poincare_mode == "all":
+        n_steps, n_particles = q.shape
 
-    for i in tqdm(range(len(q))):
-        h_0 = fn.H0_for_action_angle(q[i], p[i])
-        kappa_squared = 0.5 * (1 + h_0 / (par.A**2))
+        actions_list = np.zeros((n_steps, n_particles))
 
-        if 0 < kappa_squared < 1:
-            Q = (q[i] + np.pi) / par.lambd
-            P = par.lambd * p[i]
+        x = np.zeros((n_steps, n_particles))
+        y = np.zeros((n_steps, n_particles))
+        
+        for j in tqdm(range(n_particles)):
+            for i in range(n_steps):
+                h_0 = fn.H0_for_action_angle(q[i, j], p[i, j])
+                kappa_squared = 0.5 * (1 + h_0 / (par.A**2))
 
-            action, theta = fn.compute_action_angle(kappa_squared, P)
-            action_list.append(action)
-            theta_list.append(theta)
-            sign_list.append(np.sign(q[i]-np.pi))
+                if 0 < kappa_squared < 1:
+                    Q = (q[i, j] + np.pi) / par.lambd
+                    P = par.lambd * p[i, j]
 
-    action_list = np.array(action_list)
-    theta_list = np.array(theta_list)
+                    action, theta = fn.compute_action_angle(kappa_squared, P)
+                    actions_list[i, j] = action 
 
-    x = np.sqrt(2 * np.array(action_list)) * np.cos(theta_list)
-    y = - np.sqrt(2 * np.array(action_list)) * np.sin(theta_list) * np.array(sign_list)
+                    x[i, j] = np.sqrt(2 * action) * np.cos(theta)
+                    y[i, j] = - np.sqrt(2 * action) * np.sin(theta) * np.sign(q[i, j]-np.pi)
 
-    return x, y
+        x = np.array(x)
+        y = np.array(y)
+        actions_list = np.array(actions_list)
+
+    elif poincare_mode in ["first", "last"]:
+        actions_list = []
+        theta_list = []
+        sign_list = []
+
+        for i in tqdm(range(len(q))):
+            h_0 = fn.H0_for_action_angle(q[i], p[i])
+            kappa_squared = 0.5 * (1 + h_0 / (par.A**2))
+
+            if 0 < kappa_squared < 1:
+                Q = (q[i] + np.pi) / par.lambd
+                P = par.lambd * p[i]
+
+                action, theta = fn.compute_action_angle(kappa_squared, P)
+                actions_list.append(action)
+                theta_list.append(theta)
+                sign_list.append(np.sign(q[i]-np.pi))
+
+        actions_list = np.array(actions_list)
+        theta_list = np.array(theta_list)
+
+        x = np.sqrt(2 * np.array(actions_list)) * np.cos(theta_list)
+        y = - np.sqrt(2 * np.array(actions_list)) * np.sin(theta_list) * np.array(sign_list)
+
+    return x, y, actions_list
 
 
 # --------------- Save results ----------------
@@ -44,7 +72,7 @@ def run_action_angle(poincare_mode):
 
 if __name__ == "__main__":
     poincare_mode = sys.argv[1]
-    x, y = run_action_angle(poincare_mode)
+    x, y, actions_list = run_action_angle(poincare_mode)
 
     a_start = par.a_lambda(par.T_percent)
     omega_start = par.omega_lambda(par.T_percent)
@@ -63,4 +91,4 @@ if __name__ == "__main__":
         os.makedirs(output_dir)
 
     file_path = os.path.join(output_dir, f"{poincare_mode}_{str_title}.npz")
-    np.savez(file_path, x=x, y=y)
+    np.savez(file_path, x=x, y=y, actions=actions_list)
