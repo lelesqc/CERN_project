@@ -41,14 +41,15 @@ def plot(mode):
         actions_init_pos = actions_init[mask]
         tunes_list_pos = tunes_list[mask]
 
-        for i in range(len(actions_init_pos)):
-            print(f"action: {actions_init_pos[i]}, tune: {tunes_list_pos[i]}")
+        #for i in range(len(actions_init_pos)):
+        #    print(f"action: {actions_init_pos[i]}, tune: {tunes_list_pos[i]}")
 
-        plt.scatter(x_init[1:], tunes_list[1:])
+        plt.scatter(x_init[1:], tunes_list[1:], s=20, alpha=1.0, color='blue')
         plt.xlabel("X", fontsize=20)
         plt.ylabel("Tune", fontsize=20)
         plt.title("Tune vs X", fontsize=22)
-        plt.grid(True)    
+        plt.grid(True)
+        plt.legend()    
         plt.tight_layout()
         plt.show()
 

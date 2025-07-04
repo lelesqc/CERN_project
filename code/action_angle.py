@@ -8,7 +8,6 @@ import functions as fn
 
 def run_action_angle(poincare_mode):
     data = np.load(f"integrator/evolved_qp_{poincare_mode}.npz")
-    #data = np.load("init_conditions/init_distribution.npz")
 
     q = data['q']
     p = data['p']

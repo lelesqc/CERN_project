@@ -17,7 +17,7 @@ damp_rate = 38.1
 beta = 1.0
 D = 1.82e-3
 N = 100    # fixed
-N_turn = 33
+N_turn = 132
 phi_0 = 0.0
 e = 1
 lambd = np.sqrt(h * eta * omega_rev)
@@ -44,4 +44,4 @@ T_mod = 2 * np.pi / omega_m
 steps = int(round(T_mod / dt))
 n_steps = steps * N_turn
 
-t = 0.0
+t = 0.0 

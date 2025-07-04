@@ -1,11 +1,11 @@
 #!/bin/bash
 
 RADIUS=10
-PARTICLES=1
+PARTICLES=1000
 SEC_TO_PLOT=5
 
 # Poincaré mode options: "first, "last", "all", "none"
-POINCARE_MODE="all"
+POINCARE_MODE="last"
 
 # -------------
 

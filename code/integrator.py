@@ -28,11 +28,14 @@ def run_integrator(poincare_mode):
 
     while not find_poincare:
         q, p = fn.integrator_step(q, p, psi, par.t, par.dt, fn.Delta_q, fn.dV_dq)
+        print(np.cos(psi))
 
         if par.t >= par.T_tot:
             fixed_params = True
 
         if np.cos(psi) > 1.0 - 1e-3:
+            sec_count += 1
+
             if poincare_mode == "first":
                 if q_single is None:
                     q_single = np.copy(q)
@@ -70,6 +73,8 @@ def run_integrator(poincare_mode):
 
     q = np.array(q)
     p = np.array(p)
+
+    print(q_sec.shape, p_sec.shape)
 
     return q, p
 

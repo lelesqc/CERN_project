@@ -12,12 +12,13 @@ def tune_calculation():
 
     n_steps, n_particles = x.shape
 
-    spectra = np.zeros((n_particles, n_steps), dtype=np.complex128)
-    freqs_list = np.zeros((n_particles, n_steps), dtype=np.float64)
-    raw_tunes = np.zeros(n_particles, dtype=np.float64)
-    interp_tunes = np.zeros(n_particles, dtype=np.float64)
+    spectra = np.zeros((n_particles, n_steps), dtype=np.complex64)
+    amplitudes = np.zeros((n_particles, n_steps), dtype=np.float32)
+    freqs_list = np.zeros((n_particles, n_steps), dtype=np.float32)
+    interp_tunes = np.zeros(n_particles, dtype=np.float32)
 
-    window = hann(n_steps)
+    n = np.arange(n_steps)
+    window = 2 * np.sin(np.pi * n)**2
 
     for i in range(n_particles):
         x_i = x[:, i] * par.lambd
@@ -27,16 +28,16 @@ def tune_calculation():
         z_i_windowed = z_i * window
 
         spectrum_i = fft(z_i_windowed)
+        amplitude_i = np.abs(spectrum_i)
         fft_omega_i = fftfreq(len(z_i), par.dt)
         fft_freqs_i = fft_omega_i / par.omega_s * 2 * np.pi
 
-        amplitude_i = np.abs(spectrum_i)
-        positive_freq_mask = fft_freqs_i > 0
+        positive_freq_mask = fft_freqs_i >= 0
+
         positive_freqs_i = fft_freqs_i[positive_freq_mask]
         positive_ampls = amplitude_i[positive_freq_mask]
 
         idx_max = np.argmax(positive_ampls)
-        tune_i = positive_freqs_i[idx_max]
         
         # interpolation
         if idx_max > 0 and idx_max < len(positive_ampls)-1:
@@ -65,20 +66,21 @@ def tune_calculation():
             interp_tunes[i] = freq_interp
 
         spectra[i, :] = spectrum_i
+        amplitudes[i, :] = amplitude_i
         freqs_list[i, :] = fft_freqs_i
 
-    return spectra, freqs_list, interp_tunes
+    return spectra, freqs_list, interp_tunes, amplitudes
 
 # -------------------------------------
 
 if __name__ == "__main__":
-    spectra, freqs_list, tunes_list = tune_calculation()
+    spectra, freqs_list, tunes_list, amplitudes = tune_calculation()
 
     output_dir = "tune_analysis"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     file_path = os.path.join(output_dir, "fft_results.npz")
-    np.savez(file_path, spectra=spectra, freqs_list=freqs_list, tunes_list=tunes_list)
+    np.savez(file_path, spectra=spectra, freqs_list=freqs_list, tunes_list=tunes_list, amplitudes=amplitudes)
 
 
