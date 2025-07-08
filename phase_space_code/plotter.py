@@ -65,7 +65,7 @@ def plot(mode):
         print(x.shape)
 
         for i in range(len(actions_init_pos)):
-            print(f"action: {actions_init_pos[i]:.3f}, tune: {tunes_list_pos[i]:.3f}")
+            print(f"action: {actions_init_pos[i]:.3f}, tune: {tunes_list_pos[i]:.6f}")
 
         plt.scatter(x_init, tunes_list)
         plt.xlabel("X", fontsize=20)

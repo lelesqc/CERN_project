@@ -161,14 +161,12 @@ trajectories = np.array(trajectories)
 plt.scatter(trajectories[:, 0, 0], trajectories[:, 0, 1], s=1)
 plt.show()
 
-
 actions_computed = []
 
 for _, trajectory in enumerate(trajectories):
     concave_area_triang_i = calculate_polygon_area(trajectory)
     actions_computed.append(concave_area_triang_i / (2 * np.pi))
     
-print(actions_computed)
 #concave_area_triang = calculate_polygon_area(xy_pairs)
 #print(f"Area of the concave hull: {concave_area_triang:.4f}")
 

@@ -10,18 +10,21 @@ omega_rev = 9_571_303.971
 omega_s = 71784.77978
 V = 1.5e6
 E_s = 1.5e9
+radius = 31.3
 
 # -------------- model -----------------
 
-damp_rate = 38.1
+damp_rate = 9.6911
 beta = 1.0
+gamma = 2935.42
 D = 1.82e-3
 N = 100    # fixed
-N_turn = 5000
+N_turn = 15000
 phi_0 = 0.0
 e = 1
 lambd = np.sqrt(h * eta * omega_rev)
 A = omega_s / lambd
+Cq = 3.83 * 10e-13
 
 # -------------- YAML ------------------
 

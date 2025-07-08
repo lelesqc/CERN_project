@@ -23,7 +23,7 @@ def compute_action_angle(kappa_squared, P):
     return action, theta
     
 def dV_dq(q):  
-    return par.A**2 * np.sin(q)
+    return par.omega_s * np.sqrt(par.e * par.V / (2*np.pi * par.E_s * par.beta**2 * par.eta)) * np.sin(q) 
 
 def Delta_q(p, psi, t, dt):
     #print(f"{t:.3f}, {np.cos(psi)}, {par.a_lambda(t):.5f}, {par.omega_lambda(t)/par.omega_s:.5f}")
@@ -45,10 +45,12 @@ def compute_phi_delta(Q, P):
     return phi, delta
 
 def integrator_step(q, p, psi, t, dt, Delta_q, dV_dq):
+    noise_D = par.gamma / par.beta**2 * np.sqrt(2 * par.damp_rate * par.h * par.eta * par.Cq / par.radius)
+
     q += Delta_q(p, psi, t, dt/2)
     q = np.mod(q, 2 * np.pi)        
     t_mid = t + dt/2
-    p += dt * dV_dq(q)
+    p += dt * dV_dq(q) - dt * 2 * par.damp_rate * p / par.beta**2 + np.sqrt(dt) * noise_D * np.random.normal(size=p.shape) 
     q += Delta_q(p, psi, t_mid, dt/2)
     q = np.mod(q, 2 * np.pi)
 
