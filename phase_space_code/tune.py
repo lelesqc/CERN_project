@@ -12,6 +12,7 @@ def tune_calculation():
 
     n_steps, n_particles = x.shape
 
+    amplitudes = np.zeros((n_particles, n_steps), dtype=np.float64)
     spectra = np.zeros((n_particles, n_steps), dtype=np.complex128)
     freqs_list = np.zeros((n_particles, n_steps), dtype=np.float64)
     raw_tunes = np.zeros(n_particles, dtype=np.float64)
@@ -64,21 +65,22 @@ def tune_calculation():
             freq_interp = positive_freqs_i[0] + assk * delta_f
             interp_tunes[i] = freq_interp
 
+        amplitudes[i, :] = amplitude_i
         spectra[i, :] = spectrum_i
         freqs_list[i, :] = fft_freqs_i
 
-    return spectra, freqs_list, interp_tunes
+    return spectra, freqs_list, interp_tunes, amplitudes
 
 # -------------------------------------
 
 if __name__ == "__main__":
-    spectra, freqs_list, tunes_list = tune_calculation()
+    spectra, freqs_list, tunes_list, amplitudes = tune_calculation()
 
     output_dir = "tune_analysis"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     file_path = os.path.join(output_dir, "fft_results.npz")
-    np.savez(file_path, spectra=spectra, freqs_list=freqs_list, tunes_list=tunes_list)
+    np.savez(file_path, spectra=spectra, freqs_list=freqs_list, tunes_list=tunes_list, amplitudes=amplitudes)
 
 
