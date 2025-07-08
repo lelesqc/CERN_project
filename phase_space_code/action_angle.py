@@ -37,6 +37,7 @@ def run_action_angle(mode):
 
     x = np.array(x)
     y = np.array(y)
+
     actions_list = np.array(actions_list)
 
     return x, y, actions_list

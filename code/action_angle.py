@@ -12,7 +12,7 @@ def run_action_angle(poincare_mode):
     q = data['q']
     p = data['p']
 
-    if poincare_mode == "all":
+    if poincare_mode in ["all", "none"]:
         n_steps, n_particles = q.shape
 
         actions_list = np.zeros((n_steps, n_particles))
@@ -21,7 +21,7 @@ def run_action_angle(poincare_mode):
         y = np.zeros((n_steps, n_particles))
         
         for j in tqdm(range(n_particles)):
-            for i in range(n_steps):
+            for i in tqdm(range(n_steps)):
                 h_0 = fn.H0_for_action_angle(q[i, j], p[i, j])
                 kappa_squared = 0.5 * (1 + h_0 / (par.A**2))
 

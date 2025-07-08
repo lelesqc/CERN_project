@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import params as par
 
 def plot(mode):
-    if mode == "phasespace":
+    """if mode == "phasespace":
         data = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
 
         x = data['x']
@@ -20,6 +20,29 @@ def plot(mode):
         plt.legend(fontsize=18)
         plt.tick_params(labelsize=18)
         plt.tight_layout()
+        plt.show()"""
+
+    if mode == "phasespace":
+        data = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+        tune_analysis = np.load(f"tune_analysis/fft_results.npz")
+
+        tunes_list = tune_analysis['tunes_list']
+
+        x = data['x']
+        y = data['y']
+
+        print(tunes_list.size)
+
+        plt.figure(figsize=(7,7))
+        scatter = plt.scatter(x, y, s=3, c=tunes_list, cmap='viridis', alpha=1.0)
+        plt.colorbar(scatter, label='Tune')
+        plt.xlabel("X", fontsize=20)
+        plt.ylabel("Y", fontsize=20)
+        plt.xlim(-15, 15)
+        plt.ylim(-15, 15)
+        plt.title("Phase Space colored by Tune", fontsize=18)
+        plt.tick_params(labelsize=18)
+        plt.tight_layout()
         plt.show()
 
     if mode == "tune":
@@ -32,24 +55,23 @@ def plot(mode):
         x_init = x[0, :]            
         actions_init = actions[0, :] 
         
-        mask = x_init > 0
-
         spectra = data['spectra']
         freqs_list = data['freqs_list']
         tunes_list = data['tunes_list']
 
-        actions_init_pos = actions_init[mask]
-        tunes_list_pos = tunes_list[mask]
+        actions_init_pos = actions_init
+        tunes_list_pos = tunes_list
 
-        #for i in range(len(actions_init_pos)):
-        #    print(f"action: {actions_init_pos[i]}, tune: {tunes_list_pos[i]}")
+        print(x.shape)
 
-        plt.scatter(x_init[1:], tunes_list[1:], s=20, alpha=1.0, color='blue')
+        for i in range(len(actions_init_pos)):
+            print(f"action: {actions_init_pos[i]:.3f}, tune: {tunes_list_pos[i]:.3f}")
+
+        plt.scatter(x_init, tunes_list)
         plt.xlabel("X", fontsize=20)
         plt.ylabel("Tune", fontsize=20)
         plt.title("Tune vs X", fontsize=22)
-        plt.grid(True)
-        plt.legend()    
+        plt.grid(True)    
         plt.tight_layout()
         plt.show()
 

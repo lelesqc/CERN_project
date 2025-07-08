@@ -18,8 +18,12 @@ def generate_init(radius, n_particles):
     count = 0
 
     while count < n_particles:
-        X = random.uniform(-radius, radius)
-        Y = random.uniform(-radius, radius)
+        #X = random.uniform(-radius, radius)
+        #Y = random.uniform(-radius, radius)
+
+        X = 11.0
+        Y = 0
+
 
         if X**2 + Y**2 <= radius**2:
             X_list[count] = X
