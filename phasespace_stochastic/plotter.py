@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+import functions as fn
 import params as par
 
 def plot(mode):
@@ -24,6 +25,10 @@ def plot(mode):
 
     if mode == "phasespace":
         data = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
+        integrator = np.load("integrator/evolved_qp_phasespace.npz")
+
+        q = integrator['q']
+        p = integrator['p']
         #tune_analysis = np.load(f"tune_analysis/fft_results.npz")
 
         #tunes_list = tune_analysis['tunes_list']
@@ -32,6 +37,19 @@ def plot(mode):
         y = data['y']
 
         #print(tunes_list.size)
+        energies = np.array([fn.hamiltonian(q[i], p[i]) for i in range(len(q))])
+
+        T_eff = (par.h * par.eta)**2 * par.omega_rev * par.Cq * par.gamma**2 / (2 * par.radius)
+        P_H = np.exp(-energies / T_eff)
+        P_H /= np.trapz(P_H, energies)
+
+        plt.hist(energies, bins=50, density=True, alpha=0.6, label="Simulazione")
+        plt.xlabel("Energies", fontsize=20)
+        plt.ylabel("Probability Density", fontsize=20)
+        plt.plot(energies, P_H, 'r-', lw=2, label="Teorica $e^{-E/T_{eff}}$")
+
+        plt.show()
+
 
         plt.figure(figsize=(7,7))
         plt.scatter(x, y, s=3, c='blue', alpha=1.0, label="Phase Space")
