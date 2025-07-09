@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import params as par
 
 def plot(mode):
-    """if mode == "phasespace":
+    if mode == "phasespace":
         data = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
 
         x = data['x']
@@ -20,8 +20,9 @@ def plot(mode):
         plt.legend(fontsize=18)
         plt.tick_params(labelsize=18)
         plt.tight_layout()
-        plt.show()"""
+        plt.show()
 
+    """
     if mode == "phasespace":
         data = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
         tune_analysis = np.load(f"tune_analysis/fft_results.npz")
@@ -43,10 +44,10 @@ def plot(mode):
         plt.title("Phase Space colored by Tune", fontsize=18)
         plt.tick_params(labelsize=18)
         plt.tight_layout()
-        plt.show()
+        plt.show()"""
 
     if mode == "tune":
-        data = np.load("tune_analysis/fft_results.npz")
+        data = np.load(f"tune_analysis/fft_results.npz")
         action_angle = np.load(f"action_angle/{mode}_a{par.a:.3f}_nu{par.omega_m/par.omega_s:.2f}.npz")
 
         x = action_angle['x']
